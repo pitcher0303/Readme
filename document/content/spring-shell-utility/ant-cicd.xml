@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--TeamCity 에서 사용하기 위함 파일-->
+<!--프로젝트에 맞게 바꿀것-->
+<project default="build-jar" name="Sample Project">
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="project-name" value="Sample"/>
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="MainClass" value="com.sample.SampleApplication"/>
+    <property name="builder" value="pitcher0303"/>
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="bin.dir" value="${basedir}/bin"/>
+    <property name="lib.dir" value="${basedir}/mvnlib"/>
+    <property name="resource.dir" value="${basedir}/src/main/resources"/>
+
+    <property name="class.dir" value="${basedir}/target/classes"/>
+    <property name="dist.dir" value="${basedir}/target/dist"/>
+    <property name="generatedsources.dir" location="${basedir}/target/generated-sources/ants"/>
+
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <delete dir="${class.dir}"/>
+        <mkdir dir="${class.dir}"/>
+        <delete dir="${generatedsources.dir}"/>
+        <mkdir dir="${generatedsources.dir}"/>
+    </target>
+
+    <path id="jar-project-classpath">
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+    </path>
+
+    <path id="processor.path">
+        <fileset dir="${lib.dir}">
+        </fileset>
+    </path>
+    <pathconvert property="processorpath" refid="processor.path"/>
+
+    <target name="compile-jar-classes" depends="clean">
+        <javac srcdir="${src.dir}" destdir="${class.dir}" classpathref="jar-project-classpath" source="17" target="17"
+               encoding="UTF-8" includeantruntime="true" debug="true">
+            <compilerarg line="-processorpath ${processorpath}"/>
+            <compilerarg line="-s ${generatedsources.dir}"/>
+        </javac>
+    </target>
+
+    <path id="build.classpath">
+        <fileset dir="./">
+            <include name="lib/*.jar"/>
+        </fileset>
+    </path>
+
+    <pathconvert property="manifest.classpath" pathsep=" ">
+        <path refid="build.classpath"/>
+        <mapper>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*.jar" to="lib/*.jar"/>
+            </chainedmapper>
+        </mapper>
+    </pathconvert>
+
+    <tstamp>
+        <format property="now" pattern="yyyyMMddHHmmss" locale="ko,KR"/>
+    </tstamp>
+
+    <target name="jar">
+        <jar basedir="${class.dir}" destfile="${dist.dir}/${project-name}.jar"
+             excludes="**/*.yml,**/*.xml,**/*.sql,db/,*.jar">
+            <manifest>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+                <attribute name="Built-By" value="${builder}"/>
+                <attribute name="Built-On" value="${now}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build-jar">
+        <antcall target="clean"/>
+        <antcall target="compile-jar-classes"/>
+        <antcall target="jar"/>
+        <antcall target="copy_lib"/>
+        <antcall target="copy_resourece"/>
+        <antcall target="make-script"/>
+        <antcall target="toZip"/>
+    </target>
+
+    <target name="copy_lib">
+        <mkdir dir="${dist.dir}/lib"/>
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${lib.dir}">
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy_resourece">
+        <mkdir dir="${dist.dir}/conf"/>
+        <copy todir="${dist.dir}/conf">
+            <fileset dir="${resource.dir}">
+            </fileset>
+        </copy>
+
+        <mkdir dir="${dist.dir}/bin"/>
+        <copy todir="${dist.dir}/bin">
+            <fileset dir="${bin.dir}">
+                <include name="**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="make-script">
+        <exec executable="sh" dir="${dist.dir}/bin/shell-maker"
+              outputproperty="bin-maker-script" failonerror="true">
+            <arg value="shell-maker.sh"/>
+            <arg value="${MainClass}"/>
+        </exec>
+        <echo>Bash Exist</echo>
+        <echo>output: ${bin-maker-script}</echo>
+    </target>
+
+    <target name="toZip">
+        <zip basedir="${dist.dir}" destfile="${dist.dir}/${project-name}.zip"/>
+    </target>
+</project>

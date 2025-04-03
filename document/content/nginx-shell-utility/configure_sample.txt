@@ -1,0 +1,19 @@
+# NGINX 설치 컨피그
+
+# 설치전 설정 커맨드
+./configure \
+--with-zlib=./zlib-1.3.1 \
+--with-pcre=./pcre2-10.45 \
+# ssl 사용 안한다면 빼도 된다.
+--with-openssl=./openssl-3.4.1 \
+# ssl 사용 안한다면 빼도 된다.
+--with-http_ssl_module \
+# ssh proxy 사용 안한다면 빼도된다.
+--with-stream \
+--with-debug \
+--prefix=/apps/pitcher0303-nginx \
+--user=ubuntu \
+--group=ubuntu
+
+# 컴파일, 설치 커맨드
+make && make install

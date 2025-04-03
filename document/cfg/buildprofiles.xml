@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE buildprofiles SYSTEM "https://resources.jetbrains.com/writerside/1.0/build-profiles.dtd">
+<buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <variables>
+        <custom-favicons>favicon.png</custom-favicons>
+        <header-logo>favicon.png</header-logo>
+        <!--        <download-title>문서 다운로드(.pdf)</download-title>-->
+        <!--        <download-page>%resourceUrl%/downloads/ReadMe.pdf</download-page>-->
+        <showDownloadButton>true</showDownloadButton>
+        <resizable-sidebar>true</resizable-sidebar>
+        <link-color>blueberry</link-color>
+        <custom-css>root.css</custom-css>
+        <noindex-content>true</noindex-content>
+        <offline-docs>true</offline-docs>
+    </variables>
+    <footer>
+        <copyright>Pitcher0303 .</copyright>
+    </footer>
+    <build-profile instance="Document"/>
+
+</buildprofiles>

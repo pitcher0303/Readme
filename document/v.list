@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE vars SYSTEM "https://resources.jetbrains.com/writerside/1.0/vars.dtd">
+<vars>
+    <var name="product" value="Writerside"/>
+    <!--  적절한 url 이 필요할듯함. github 이라던지  -->
+    <var name="baseUrl" value="http://"/>
+    <var name="resourceUrl" value="resources"/>
+</vars>

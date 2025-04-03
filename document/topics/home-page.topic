@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Home" id="home-page" help-id="Section-Starting-Page;Home-Page">
+    <section-starting-page>
+        <title>ReadMe</title>
+        <description>
+            프로젝트 수행간 자주 쓰이는 Shell 또는 Config 에 대한 문서.
+        </description>
+
+        <spotlight>
+            <a href="nginx-readme.md" type="world" summary="Nginx Readme: Nginx 설치 방법, Nginx 설정 방법에 관한 문서">nginx</a>
+            <a href="redis.md" type="data" summary="Redis Shell Utility">redis</a>
+        </spotlight>
+
+        <!--    Add several topics that are most important for this section.    -->
+        <primary>
+            <title>함께 보기</title>
+            <a href="spring-shell-utility.md" type="start" summary="Spring Shell Utility 및 xml(ant.xml)">spring</a>
+            <a href="ssl.md" type="key" summary="SSL 설명 및 자체 인증서 생성 방법에 관한 문서">ssl</a>
+        </primary>
+
+        <!--    Add several topics that are less important or are relevant only for advanced/experienced users.    -->
+        <secondary>
+            <title>더보기</title>
+            <a href="nginx-config.md">nginx-readme</a>
+            <a href="redis-rotate-log-maker-readme.md">redis-readme</a>
+            <a href="spring-shell-utility-readme.md">spring-readme</a>
+            <a href="ssl-readme.md">ssl-readme</a>
+            <a href="shell-script.md">샘플 shell</a>
+        </secondary>
+
+        <!--    Optionally add additional cards and links to topics that are not in this section but may be relevant.    -->
+        <!--        <misc>-->
+        <!--            <links>-->
+        <!--                <group>-->
+        <!--                    <title>Other related topics as links</title>-->
+        <!--                    <a href=""/>-->
+        <!--                    <a href="" summary="With a custom card summary"/>-->
+        <!--                    <a href="">Custom card title</a>-->
+        <!--                    <a href="" summary="With a custom card summary">Custom card title</a>-->
+        <!--                </group>-->
+        <!--                <group>-->
+        <!--                    <title>Two in a row</title>-->
+        <!--                    <a href=""/>-->
+        <!--                    <a href="" summary="With a custom card summary"/>-->
+        <!--                    <a href="">Custom card title</a>-->
+        <!--                    <a href="" summary="With a custom card summary">Custom card title</a>-->
+        <!--                </group>-->
+        <!--            </links>-->
+        <!--        </misc>-->
+    </section-starting-page>
+
+</topic>

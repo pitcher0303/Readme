@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--프로젝트에 맞게 바꿀것-->
+<project default="build-jar" name="Sample Project">
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="project-name" value="Sample"/>
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="MainClass" value="com.sample.SampleApplication"/>
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="ftp.dir" value="D:/SampleJars/${project-name}/"/>
+    <!--프로젝트에 맞게 바꿀것-->
+    <property name="executable-full-path" location="D:/Git/bin/bash.exe"/>
+
+    <property name="builder" value="pitcher0303"/>
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="bin.dir" value="${basedir}/bin"/>
+    <property name="lib.dir" value="${basedir}/mvnlib"/>
+    <property name="resource.dir" value="${basedir}/src/main/resources"/>
+
+    <property name="class.dir" value="${basedir}/target/classes"/>
+    <property name="dist.dir" value="${basedir}/target/dist"/>
+    <property name="generatedsources.dir" location="${basedir}/target/generated-sources/ants"/>
+
+    <!--  모든 작업  -->
+    <target name="build-jar">
+        <antcall target="clean"/>
+        <antcall target="compile-jar-classes"/>
+        <antcall target="jar"/>
+        <antcall target="copy_lib"/>
+        <antcall target="copy_resourece"/>
+        <antcall target="make-script"/>
+        <antcall target="copy_results"/>
+        <!--        <antcall target="post_copy_results"/>-->
+        <antcall target="end"/>
+    </target>
+
+    <!--  프로젝트 내에 배포 폴더를 정리하고 새로 만듬. 이전 내용 삭제를 위해  -->
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <delete dir="${class.dir}"/>
+        <mkdir dir="${class.dir}"/>
+        <delete dir="${generatedsources.dir}"/>
+        <mkdir dir="${generatedsources.dir}"/>
+    </target>
+
+    <!--  library 클래스 패스  -->
+    <path id="jar-project-classpath">
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+    </path>
+
+    <!--  lombok 등 자체 프로세서 클래스 패스  -->
+    <path id="processor.path">
+        <fileset dir="${lib.dir}">
+        </fileset>
+    </path>
+    <pathconvert property="processorpath" refid="processor.path"/>
+
+    <!--  javac 로 컴파일, processor.path 를 걸어줘서 자체 프로세서가 돌 수 있도록함. -->
+    <target name="compile-jar-classes" depends="clean">
+        <javac srcdir="${src.dir}" destdir="${class.dir}" classpathref="jar-project-classpath" source="17" target="17"
+               encoding="UTF-8" includeantruntime="true" debug="true">
+            <compilerarg line="-processorpath ${processorpath}"/>
+            <compilerarg line="-s ${generatedsources.dir}"/>
+        </javac>
+    </target>
+
+    <!-- artifact 에 lib 의 .jar 파일을 모두 포함시키기 위해서 설정 -->
+    <path id="build.classpath">
+        <fileset dir="./">
+            <include name="lib/*.jar"/>
+        </fileset>
+    </path>
+    <pathconvert property="manifest.classpath" pathsep=" ">
+        <path refid="build.classpath"/>
+        <mapper>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*.jar" to="lib/*.jar"/>
+            </chainedmapper>
+        </mapper>
+    </pathconvert>
+
+    <!--  빌드 날짜 표기용  -->
+    <tstamp>
+        <format property="now" pattern="yyyyMMddHHmmss" locale="ko,KR"/>
+    </tstamp>
+
+    <!--  **/*.yml,**/*.xml,**/*.sql,db/,*.jar 파일들은 conf 및 lib 디렉토리에 따로 두기 때문에 jar 패키징에서 제외  -->
+    <target name="jar">
+        <jar basedir="${class.dir}" destfile="${dist.dir}/${project-name}.jar"
+             excludes="**/*.yml,**/*.xml,**/*.sql,db/,*.jar">
+            <manifest>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+                <attribute name="Built-By" value="${builder}"/>
+                <attribute name="Built-On" value="${now}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!--  lib 디렉토리에 라이브러리 복사  -->
+    <target name="copy_lib">
+        <mkdir dir="${dist.dir}/lib"/>
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${lib.dir}">
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy_resourece">
+        <!--  conf 디렉토리에 **/*.yml,**/*.xml,**/*.sql,db/ 들 복사  -->
+        <mkdir dir="${dist.dir}/conf"/>
+        <copy todir="${dist.dir}/conf">
+            <fileset dir="${resource.dir}">
+            </fileset>
+        </copy>
+        <!--  bin 에는 bin 스크립트 복사  -->
+        <mkdir dir="${dist.dir}/bin"/>
+        <copy todir="${dist.dir}/bin">
+            <fileset dir="${bin.dir}">
+                <include name="**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!--  bin 에 스크립트 복사하는 단계  -->
+    <target name="make-script" depends="bash-checks, make-shell-script, make-shell-script-bat"/>
+    <!--  로컬에 bash 가 있는지 확인, 없으면 bat 파일 실행 ( window 기준임 )  -->
+    <target name="bash-checks">
+        <available file="${executable-full-path}" property="bash.exist"/>
+    </target>
+    <target name="make-shell-script" if="bash.exist">
+        <exec executable="${executable-full-path}" dir="${dist.dir}/bin/shell-maker"
+              outputproperty="bin-maker-script" failonerror="true">
+            <arg value="shell-maker.sh"/>
+            <arg value="${MainClass}"/>
+        </exec>
+        <echo>Bash Exist</echo>
+        <echo>output: ${bin-maker-script}</echo>
+    </target>
+    <target name="make-shell-script-bat">
+        <exec executable="cmd" dir="${dist.dir}/bin/shell-maker"
+              outputproperty="bin-maker-script-bat" failonerror="true">
+            <arg value="/c"/>
+            <arg value="shell-maker.bat"/>
+            <arg value="${MainClass}"/>
+        </exec>
+        <echo>Bash Not Exist</echo>
+        <echo>output: ${bin-maker-script-bat}</echo>
+    </target>
+
+    <!--  이전 lib, bin, conf 들 삭제  -->
+    <target name="prev_copy_results">
+        <!--  없으면 오류나므로 없으면 만들도록함  -->
+        <mkdir dir="${ftp.dir}/lib"/>
+        <mkdir dir="${ftp.dir}/bin"/>
+        <mkdir dir="${ftp.dir}/conf"/>
+        <delete>
+            <fileset dir="${ftp.dir}/lib"/>
+        </delete>
+        <delete>
+            <fileset dir="${ftp.dir}/bin"/>
+        </delete>
+        <delete>
+            <fileset dir="${ftp.dir}/conf"/>
+        </delete>
+    </target>
+    <!--  dist 에 만들어진 배포 파일을 옮김  -->
+    <target name="copy_results" depends="prev_copy_results">
+        <mkdir dir="${ftp.dir}"/>
+        <copy failonerror="false" file="${ftp.dir}/${project-name}.jar"
+              tofile="${ftp.dir}/${project-name}.${now}.jar"/>
+        <copy todir="${ftp.dir}">
+            <fileset dir="${dist.dir}"/>
+        </copy>
+    </target>
+    <!--  zip 파일로 묶고 나무지 삭제함  -->
+    <target name="post_copy_results" depends="copy_results">
+        <zip basedir="${ftp.dir}/lib" destfile="${ftp.dir}/lib/${project-name}.zip"/>
+        <delete>
+            <fileset dir="${ftp.dir}/lib" includes="*.jar"/>
+        </delete>
+    </target>
+    <!--  배포파일 위치 탐색기를 연다. ( window 기준 )  -->
+    <target name="end">
+        <exec executable="cmd.exe" dir="${ftp.dir}">
+            <arg line="/c explorer ."/>
+        </exec>
+    </target>
+</project>
