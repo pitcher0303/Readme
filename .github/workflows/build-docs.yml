@@ -12,7 +12,7 @@ permissions:
   pages: write
 
 env:
-  INSTANCE: 'Readme/Document'
+  INSTANCE: 'document/Document'
   DOCKER_VERSION: '2025.03.8312'
   # IS_GROUP: 'true'  # Uncomment to build a group
 
