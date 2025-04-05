@@ -4,8 +4,8 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <variables>
-        <custom-favicons>favicon.png</custom-favicons>
-        <header-logo>favicon.png</header-logo>
+        <custom-favicons>pitcher0303n.png</custom-favicons>
+        <header-logo>pitcher0303n.png</header-logo>
         <!--        <download-title>문서 다운로드(.pdf)</download-title>-->
         <!--        <download-page>%resourceUrl%/downloads/ReadMe.pdf</download-page>-->
         <showDownloadButton>true</showDownloadButton>
