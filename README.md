@@ -4,4 +4,6 @@
 
 writerside 플러그인으로 개발 되었다.
 
-내 aws 에 web 으로 올려둔 상태
+~~내 aws 에 web 으로 올려둔 상태~~
+
+github pages 를 활용하여 배포된 상태

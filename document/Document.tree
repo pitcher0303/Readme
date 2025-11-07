@@ -8,6 +8,7 @@
     <toc-element topic="starter.md"/>
     <toc-element topic="home-page.topic">
     </toc-element>
+    <toc-element topic="portfolio.md"/>
     <toc-element topic="nginx-readme.md">
         <toc-element topic="nginx-setup.md"/>
         <toc-element topic="nginx-config.md"/>
