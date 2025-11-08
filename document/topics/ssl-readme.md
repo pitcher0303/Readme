@@ -236,18 +236,18 @@ openssl rsa -in intermediateca.key.pem -out intermediateca.key.pem
 openssl rsa -in intermediateca.key.pem -text -noout
 ```
 
-## server 인증서 생성
+## leaf-server 인증서 생성
 
-* **A. PRIVATE KEY 생성(Server 개인키)**
+* **A. PRIVATE KEY 생성(leaf-Server 개인키)**
 
 ```Bash
-openssl genrsa -aes256 -out server.key.pem 2048
+openssl genrsa -aes256 -out leaf-server.key.pem 2048
 ```
 
 * **A-1. pkcs1 -> pkcs8 변환**
 
 ```Bash
-openssl pkcs8 -topk8 -inform PEM -outform PEM -in server.key.pkcs1.pem -out server.key.pkcs8.pem
+openssl pkcs8 -topk8 -inform PEM -outform PEM -in leaf-server.key.pkcs1.pem -out leaf-server.key.pkcs8.pem
 ```
 
 `* pkcs1은 'BEGIN RSA PRIVATE KEY' 으로 시작 pkcs8은 'BEGIN ENCRYPTED PRIVATE KEY' 으로 시작.`
@@ -255,43 +255,43 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -in server.key.pkcs1.pem -out serv
 * **B. CSR(인증서 발급요청)**
 
 ```Bash
-openssl req -new -key server.key.pem -out server.csr.pem -config server.conf
+openssl req -new -key leaf-server.key.pem -out leaf-server.csr.pem -config leaf-server.conf
 ```
 
-[server.conf](#leaf.conf) 파일은 하단 참조
+[leaf-server.conf](#leaf.conf) 파일은 하단 참조
 
-* **C. server CRT(인증서 발급 - ROOT CA)**
+* **C. leaf-server CRT(인증서 발급 - ROOT CA)**
 
 ```Bash
-openssl x509 -req -days 1825 -extensions v3_user -in server.csr.pem \  
+openssl x509 -req -days 1825 -extensions v3_user -in leaf-server.csr.pem \  
 -CA ../rootca/rootca.crt.pem \
 -CAcreateserial \  
 -CAkey ../rootca/rootca.key.pem \  
--out server.crt.pem \  
--extfile server.conf
+-out leaf-server.crt.pem \  
+-extfile leaf-server.conf
 ```
 
-[server.conf](#leaf.conf) 파일은 하단 참조
+[leaf-server.conf](#leaf.conf) 파일은 하단 참조
 
-* **C. server CRT(인증서 발급 - Intermediate CA)**
+* **C. leaf-server CRT(인증서 발급 - Intermediate CA)**
 
 ```Bash
-openssl x509 -req -days 3650 -extensions v3_user -in server.csr.pem \
+openssl x509 -req -days 3650 -extensions v3_user -in leaf-server.csr.pem \
 -CA ../intermediate/intermediateca.crt.pem \
 -CAcreateserial \
 -CAkey ../intermediate/intermediateca.key.pem \
--out server.crt.pem \
--extfile server.conf
+-out leaf-server.crt.pem \
+-extfile leaf-server.conf
 ```
 
 `CAcreateserial: 시리얼 자동 지정 및 시리얼 파일 생성 (.srl)`  
-`CAserial rootca.srl: CAcreateserial 로 한번 발급한 이후(server-n crt 발급시)에는 이 옵션으로 시리얼 생성 파일 추가`  
-[server.conf](#leaf.conf) 파일은 하단 참조
+`CAserial rootca.srl: CAcreateserial 로 한번 발급한 이후(leaf-server-n crt 발급시)에는 이 옵션으로 시리얼 생성 파일 추가`  
+[leaf-server.conf](#leaf.conf) 파일은 하단 참조
 
 * **D. 발급된 인증서 보기**
 
 ```Bash
-openssl x509 -in server.crt.pem -text -noout
+openssl x509 -in leaf-server.crt.pem -text -noout
 ```
 
 * **E. Key File Password 제거**
@@ -309,36 +309,36 @@ openssl rsa -in intermediateca.key.pem -text -noout
 * **G. CRT to PKCS12 Keystore 변환**
 
 ```Bash
-openssl pkcs12 -export -in devServer.crt.pem -inkey devServer/server.key.pkcs8.pem -name "QMPC-DEV" -aes256 -out qmpc.keystore.p12
-openssl pkcs12 -export -in prism-app02.crt -inkey prism-app02.key -aes256 -out prism-app02.keystore.p12 -name prism-app02 -CAfile rootca.crt -caname rootca -chain
+openssl pkcs12 -export -in leaf-server.crt.pem -inkey leaf-server/leaf-server.key.pkcs8.pem -name "LEAF-SERVER" -aes256 -out leaf-server.keystore.p12
+openssl pkcs12 -export -in leaf-server.crt -inkey leaf-server.key -aes256 -out leaf-server.keystore.p12 -name leaf-server -CAfile rootca.crt -caname rootca -chain
 ```
 
 * **H. Keystore VIEW(Key store list 보기)**
 
 ```Bash
-/app/jdk-17.0.9/bin/keytool -list -keystore qmpc.keystore.p12 -storepass root -v
+/app/jdk-17.0.9/bin/keytool -list -keystore leaf-server.keystore.p12 -storepass root -v
 ```
 
 * **I. PKCS12 -> JKS**
 
 ```Bash
-/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype JKS -destkeystore prism-app02.keystore.jks -deststorepass nms1234 -srckeystore prism-app02.keystore.p12 -srcstoretype PKCS12 -srcstorepass nms1234
+/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype JKS -destkeystore leaf-server.keystore.jks -deststorepass leaf-server -srckeystore leaf-server.keystore.p12 -srcstoretype PKCS12 -srcstorepass leaf-server
 ```
 
 * **J. JKS -> PKCS12**
 
 ```Bash
-/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype PKCS12 -destkeystore prism-app02.keystore.p12 -deststorepass nms1234 -srckeystore prism-app02.keystore.jks -srcstoretype JKS -srcstorepass nms1234
-/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype PKCS12 -destkeystore prism-app02.truststore.p12 -deststorepass nms1234 -srckeystore prism-app02.truststore.jks -srcstoretype JKS -srcstorepass nms1234
+/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype PKCS12 -destkeystore leaf-server.keystore.p12 -deststorepass leaf-server -srckeystore leaf-server.keystore.jks -srcstoretype JKS -srcstorepass leaf-server
+/app/jdk-17.0.7/bin/keytool -importkeystore -deststoretype PKCS12 -destkeystore leaf-server.truststore.p12 -deststorepass leaf-server -srckeystore leaf-server.truststore.jks -srcstoretype JKS -srcstorepass leaf-server
 ```
 
 * **K. CRT IMPORT Keystore**
 
 ```Bash
-/app/jdk-17.0.7/bin/keytool -keystore prism-app02.keystore.p12 -alias rootca -import -file rootca.crt -storepass nms1234
-/app/jdk-17.0.7/bin/keytool -keystore prism-app02.truststore.p12 -alias rootca -import -file rootca.crt -storepass nms1234
-/app/jdk-17.0.7/bin/keytool -keystore prism-app02.keystore.jks -alias rootca -import -file rootca.crt -storepass nms1234
-/app/jdk-17.0.7/bin/keytool -keystore prism-app02.truststore.jks -alias rootca -import -file rootca.crt -storepass nms1234
+/app/jdk-17.0.7/bin/keytool -keystore leaf-server.keystore.p12 -alias rootca -import -file rootca.crt -storepass leaf-server
+/app/jdk-17.0.7/bin/keytool -keystore leaf-server.truststore.p12 -alias rootca -import -file rootca.crt -storepass leaf-server
+/app/jdk-17.0.7/bin/keytool -keystore leaf-server.keystore.jks -alias rootca -import -file rootca.crt -storepass leaf-server
+/app/jdk-17.0.7/bin/keytool -keystore leaf-server.truststore.jks -alias rootca -import -file rootca.crt -storepass leaf-server
 ```
 
 ## ROOT-CA-openssl.conf(rootca.conf) {id="rootca.conf"}
@@ -422,7 +422,7 @@ ___
 1. cert 내보내기
 
 ```text
-openssl pkcs12 -in qmpc.keystore.p12 -nokeys -out qmpc-dev.cert.pem
+openssl pkcs12 -in leaf-server.keystore.p12 -nokeys -out leaf-server.cert.pem
 ```
 
 2. 개인키 내보내기
@@ -430,12 +430,12 @@ openssl pkcs12 -in qmpc.keystore.p12 -nokeys -out qmpc-dev.cert.pem
 - 키 암호화 해서 내보내기
 
 ```text
-openssl pkcs12 -in qmpc.keystore.p12 -nocerts -out qmpc-dev.key.pem
+openssl pkcs12 -in leaf-server.keystore.p12 -nocerts -out leaf-server.key.pem
 ```
 
 - 키 비암호화 해서 내보내기
 
 ```text
-openssl pkcs12 -in qmpc.keystore.p12 -nodes -nocerts -out qmpc-dev.key.pem
+openssl pkcs12 -in leaf-server.keystore.p12 -nodes -nocerts -out leaf-server.key.pem
 ```
 
